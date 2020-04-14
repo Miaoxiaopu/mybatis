@@ -1,0 +1,83 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<!-- 配置路径 -->
+<mapper namespace="com.soft863.www.mapper.UserMapper">    <!-- 接口的路径 -->
+<!-- <cache  type="com.soft863.www.cache.CacheTest"/> -->
+<!-- 序列插入数据第一种 -->
+<insert id="insertUser" parameterType="user">
+	insert into user_mp2 values(seq1.nextval,#{username},#{password})
+</insert>
+
+<!-- 序列插入数据第二种 -->
+<insert id="insertUser2" parameterType="user">
+	<selectKey keyProperty="userId" resultType="int" order="BEFORE">
+		select seq1.nextval from dual
+	</selectKey>
+	insert into user_mp2 values(#{userId},#{username},#{password})
+</insert>
+
+<!-- 字符串sys_guid插入数据第三种 -->
+<insert id="insertUser3" parameterType="user2">
+	<selectKey keyProperty="userId" resultType="String" order="BEFORE">
+		select sys_guid() from dual
+	</selectKey>
+	insert into user_mp3 values(#{userId},#{username},#{password})
+</insert>
+<!-- 测试mysql -->
+<select id="queryUser" resultType="map">
+	select * from user_mp
+</select>
+<!-- 调用有参存储过程(pro_add) -->
+<select id="callPro" statementType="CALLABLE" parameterType="map" >
+	{call pro_add(#{a,jdbcType=INTEGER,mode=IN},#{b,jdbcType=INTEGER,mode=IN},#{c,jdbcType=INTEGER,mode=OUT})}
+</select>
+<!-- 调用有参存储过程2(pro_add1) -->
+<select id="callPro1" statementType="CALLABLE" parameterType="user3" >
+	{call pro_add1(#{username,jdbcType=VARCHAR,mode=OUT})}
+</select>
+<!-- 使用resultMap處理結果(实体类) -->
+<select id="queryByResultMap" resultMap="userMap">
+	select * from user_mp 
+	<where>1=1</where>
+</select>
+<resultMap type="user3" id="userMap">
+	<result column="username" property="username"/>
+	<result column="password" property="password"/>
+</resultMap>
+
+<!-- 使用resultMap處理結果(Map) -->
+<select id="queryByResultMap1" resultMap="userMap1">
+	select * from user_mp 
+	<where>1=1</where>
+</select>
+<resultMap type="map" id="userMap1">
+	<result column="username" property="username"/>
+	<result column="password" property="password"/>
+</resultMap>
+<!-- 一对一，一个学生对应一个身份证信息 -->
+<select id="queryStudentByStuNo" parameterType="int" resultMap="student_card_map">
+	select t.*,t2.* from student t,studentcard t2 where t.cardid=t2.cardid and t.stuNo=#{stuNo}
+</select>
+<resultMap type="student" id="student_card_map">
+	<id property="stuNo" column="stuNo"/>
+	<result property="stuName" column="stuName"/>
+	<association property="studentCard" javaType="studentCard"><!--一定要写javaType -->
+		<id column="cardId" property="cardId"/>
+		<result column="cardInfo" property="cardInfo"/>
+	</association>
+</resultMap>
+<!-- 一对多 -->
+<select id="queryStudentByClassId" parameterType="int" resultMap="student_studentclass_map" useCache="true">
+	select t.*,t2.* from studentclass t inner join student t2 on t.classid=t2.classid where t.classid=#{classid}
+</select>
+<resultMap type="studentClass" id="student_studentclass_map">
+	<id property="classId" column="classId"/>
+	<result property="className" column="className"/>
+	<collection property="students" ofType="student">
+		<id property="stuNo" column="stuNo"/>
+		<result property="stuName" column="stuName"/>
+	</collection>
+</resultMap>
+</mapper>

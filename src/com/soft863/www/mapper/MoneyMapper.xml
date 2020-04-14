@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<!-- 配置路径 -->
+<mapper namespace="com.soft863.www.mapper.MoneyMapper">  
+ <!-- 接口的路径 -->
+<select id="queryTotalMoney" resultType="com.soft863.www.bean.Money">
+	SELECT sum(ifnull(money,0)) as money FROM money
+
+</select>
+</mapper>
